@@ -1,0 +1,21 @@
+{
+  "name": "civic-reporting-app",
+  "version": "1.0.0",
+  "description": "Monorepo root for Civic Reporting App",
+  "private": true,
+  "scripts": {
+    "dev": "docker compose -f docker-compose.dev.yml up -d && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm run start:dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "build:all": "npm run build --prefix backend && npm run build --prefix frontend",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "db:migrate": "npm run migration:run --prefix backend",
+    "db:seed": "npm run seed --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

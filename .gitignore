@@ -1,0 +1,43 @@
+# ── Dependencies ─────────────────────────────────────────
+node_modules/
+.pnp/
+
+# ── Build outputs ─────────────────────────────────────────
+dist/
+build/
+.next/
+*.tsbuildinfo
+
+# ── Environment files — NEVER commit real secrets ─────────
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+backend/.env
+backend/.env.local
+backend/.env.production
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# ── Logs ──────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+
+# ── OS ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE ───────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+
+# ── Coverage ──────────────────────────────────────────────
+coverage/
+
+# ── Misc ──────────────────────────────────────────────────
+*.pem
+.cache/

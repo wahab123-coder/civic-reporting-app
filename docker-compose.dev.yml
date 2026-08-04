@@ -1,0 +1,32 @@
+version: '3.9'
+
+# Development override — starts only infrastructure services
+# Run backend and frontend locally with hot-reload
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: civic_postgres_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: civic_reporting
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./backend/src/database/migrations/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql
+    ports:
+      - '5432:5432'
+
+  redis:
+    image: redis:7-alpine
+    container_name: civic_redis_dev
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_dev_data:/data
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
