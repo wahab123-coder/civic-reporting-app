@@ -366,9 +366,6 @@ function ComplaintDetailModal({ report, onClose, onRefresh }: {
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-
 export default function AdminComplaintsPage() {
   const [page, setPage]             = useState(1);
   const [search, setSearch]         = useState('');
