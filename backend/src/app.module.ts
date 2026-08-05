@@ -27,19 +27,36 @@ import firebaseConfig from './config/firebase.config';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get('database.host'),
-        port: config.get<number>('database.port'),
-        username: config.get('database.username'),
-        password: config.get('database.password'),
-        database: config.get('database.name'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        synchronize: config.get('NODE_ENV') === 'development',
-        logging: config.get('NODE_ENV') === 'development',
-        ssl: { rejectUnauthorized: false },
-      }),
+      useFactory: (config: ConfigService) => {
+        const isProduction = config.get('NODE_ENV') === 'production';
+        // Support full DATABASE_URL connection string (Supabase/Render)
+        const databaseUrl = process.env.DATABASE_URL;
+        if (databaseUrl) {
+          return {
+            type: 'postgres',
+            url: databaseUrl,
+            entities: [__dirname + '/**/*.entity{.ts,.js}'],
+            synchronize: !isProduction,
+            logging: !isProduction,
+            ssl: { rejectUnauthorized: false },
+            extra: { max: 5 },
+          };
+        }
+        return {
+          type: 'postgres',
+          host:     config.get('database.host'),
+          port:     config.get<number>('database.port'),
+          username: config.get('database.username'),
+          password: config.get('database.password'),
+          database: config.get('database.name'),
+          entities:   [__dirname + '/**/*.entity{.ts,.js}'],
+          migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
+          synchronize: !isProduction,
+          logging:     !isProduction,
+          ssl: { rejectUnauthorized: false },
+          extra: { max: 5 },
+        };
+      },
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     ScheduleModule.forRoot(),
