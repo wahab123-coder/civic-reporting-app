@@ -29,7 +29,6 @@ import firebaseConfig from './config/firebase.config';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const isProduction = config.get('NODE_ENV') === 'production';
-        // Support full DATABASE_URL connection string (Supabase/Render)
         const databaseUrl = process.env.DATABASE_URL;
         if (databaseUrl) {
           return {
@@ -37,9 +36,9 @@ import firebaseConfig from './config/firebase.config';
             url: databaseUrl,
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
             synchronize: !isProduction,
-            logging: !isProduction,
+            logging: false,
             ssl: { rejectUnauthorized: false },
-            extra: { max: 5 },
+            extra: { max: 3 },
           };
         }
         return {
@@ -50,11 +49,10 @@ import firebaseConfig from './config/firebase.config';
           password: config.get('database.password'),
           database: config.get('database.name'),
           entities:   [__dirname + '/**/*.entity{.ts,.js}'],
-          migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
           synchronize: !isProduction,
-          logging:     !isProduction,
+          logging:     false,
           ssl: { rejectUnauthorized: false },
-          extra: { max: 5 },
+          extra: { max: 3 },
         };
       },
     }),
