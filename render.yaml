@@ -1,0 +1,46 @@
+services:
+  # ── Backend API ───────────────────────────────────────────
+  - type: web
+    name: civic-reporting-api
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci && npm run build
+    startCommand: node dist/main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGIN
+        value: https://civic-reporting-frontend.onrender.com
+
+  # ── Frontend Static Site ──────────────────────────────────
+  - type: web
+    name: civic-reporting-frontend
+    runtime: static
+    region: oregon
+    plan: free
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://civic-reporting-api.onrender.com/api/v1
+      - key: VITE_MAPBOX_TOKEN
+        sync: false
