@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://civic-reporting-app.onrender.com/api/v1';
+const BASE_URL = (import.meta.env.VITE_API_URL as string) || 'https://civic-reporting-app.onrender.com/api/v1';
 
 export const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
