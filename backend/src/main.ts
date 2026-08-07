@@ -4,26 +4,23 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import * as compression from 'compression';
-import * as morgan from 'morgan';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ['log', 'error', 'warn', 'debug'],
+    logger: ['log', 'error', 'warn'],
+    abortOnError: false,
   });
 
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT', 3000);
-  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
+  const port = parseInt(process.env.PORT || '3000', 10);
+  const nodeEnv = process.env.NODE_ENV || 'development';
 
-  // Security
   app.use(helmet());
   app.use(compression());
-  app.use(morgan(nodeEnv === 'production' ? 'combined' : 'dev'));
 
-  // CORS
   app.enableCors({
     origin: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -31,15 +28,13 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Global prefix and versioning
   app.setGlobalPrefix('api');
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
-  // Global pipes, filters, interceptors
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
     }),
@@ -48,45 +43,31 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
 
   // Swagger docs
-  if (nodeEnv !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('Civic Reporting API')
-      .setDescription(
-        'REST API for Civic Reporting App — citizens report community issues to government',
-      )
-      .setVersion('1.0')
-      .addBearerAuth(
-        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-        'access-token',
-      )
-      .addTag('Auth')
-      .addTag('Reports')
-      .addTag('Media')
-      .addTag('Comments')
-      .addTag('Departments')
-      .addTag('Assignments')
-      .addTag('Notifications')
-      .addTag('Analytics')
-      .addTag('Users')
-      .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document, {
-      swaggerOptions: { persistAuthorization: true },
-    });
-  }
+  const config = new DocumentBuilder()
+    .setTitle('Civic Reporting API')
+    .setDescription('Civic Reporting App REST API')
+    .setVersion('1.0')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access-token')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
-  // Health check endpoint (prevents Render free tier sleep)
+  // Health check — must respond before DB is ready
   app.getHttpAdapter().get('/health', (req: any, res: any) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), env: nodeEnv });
   });
   app.getHttpAdapter().get('/', (req: any, res: any) => {
     res.json({ status: 'ok', service: 'Civic Reporting API', docs: '/api/docs' });
   });
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
-  console.log(`\n🚀 Civic Reporting API running at: http://localhost:${port}/api/v1`);
-  console.log(`📚 Swagger docs:                   http://localhost:${port}/api/docs`);
-  console.log(`🌍 Environment:                    ${nodeEnv}\n`);
+  console.log(`\n🚀 API: http://0.0.0.0:${port}/api/v1`);
+  console.log(`📚 Docs: http://0.0.0.0:${port}/api/docs`);
+  console.log(`🌍 Env: ${nodeEnv}\n`);
 }
-bootstrap();
+
+bootstrap().catch(err => {
+  console.error('Bootstrap failed:', err);
+  process.exit(1);
+});
