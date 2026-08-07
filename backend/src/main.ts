@@ -75,6 +75,14 @@ async function bootstrap() {
     });
   }
 
+  // Health check endpoint (prevents Render free tier sleep)
+  app.getHttpAdapter().get('/health', (req: any, res: any) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+  app.getHttpAdapter().get('/', (req: any, res: any) => {
+    res.json({ status: 'ok', service: 'Civic Reporting API', docs: '/api/docs' });
+  });
+
   await app.listen(port);
 
   console.log(`\n🚀 Civic Reporting API running at: http://localhost:${port}/api/v1`);
