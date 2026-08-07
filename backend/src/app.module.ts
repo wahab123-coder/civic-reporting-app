@@ -30,29 +30,27 @@ import firebaseConfig from './config/firebase.config';
       useFactory: (config: ConfigService) => {
         const isProduction = config.get('NODE_ENV') === 'production';
         const databaseUrl = process.env.DATABASE_URL;
+        const base = {
+          entities:   [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: !isProduction,
+          logging:     false,
+          ssl: { rejectUnauthorized: false },
+          extra: { max: 3, connectionTimeoutMillis: 10000 },
+          retryAttempts: 10,
+          retryDelay: 3000,
+          keepConnectionAlive: true,
+        };
         if (databaseUrl) {
-          return {
-            type: 'postgres',
-            url: databaseUrl,
-            entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: !isProduction,
-            logging: false,
-            ssl: { rejectUnauthorized: false },
-            extra: { max: 3 },
-          };
+          return { type: 'postgres' as const, url: databaseUrl, ...base };
         }
         return {
-          type: 'postgres',
+          type: 'postgres' as const,
           host:     config.get('database.host'),
           port:     config.get<number>('database.port'),
           username: config.get('database.username'),
           password: config.get('database.password'),
           database: config.get('database.name'),
-          entities:   [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: !isProduction,
-          logging:     false,
-          ssl: { rejectUnauthorized: false },
-          extra: { max: 3 },
+          ...base,
         };
       },
     }),
