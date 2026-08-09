@@ -32,7 +32,7 @@ import firebaseConfig from './config/firebase.config';
         const dbUrl  = process.env.DATABASE_URL;
         const common = {
           entities:    [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: true,          // always sync — handles new columns
+          synchronize: false,  // use migrations in production
           logging:     false,
           ssl:         { rejectUnauthorized: false },
           extra:       { max: 3, connectionTimeoutMillis: 30000, idleTimeoutMillis: 30000 },
