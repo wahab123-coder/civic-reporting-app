@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import * as compression from 'compression';
 import { AppModule } from './app.module';
@@ -14,60 +13,63 @@ async function bootstrap() {
     abortOnError: false,
   });
 
-  const configService = app.get(ConfigService);
-  const port = parseInt(process.env.PORT || '3000', 10);
+  const port    = parseInt(process.env.PORT || '3000', 10);
   const nodeEnv = process.env.NODE_ENV || 'development';
 
-  app.use(helmet());
+  app.use(helmet({ contentSecurityPolicy: false }));
   app.use(compression());
 
   app.enableCors({
     origin: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+    allowedHeaders: ['Content-Type','Authorization'],
     credentials: true,
   });
 
   app.setGlobalPrefix('api');
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: false,
-      transform: true,
-      transformOptions: { enableImplicitConversion: true },
-    }),
-  );
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: false,
+    transform: true,
+    transformOptions: { enableImplicitConversion: true },
+  }));
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  // Swagger docs
-  const config = new DocumentBuilder()
+  // Swagger
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('Civic Reporting API')
-    .setDescription('Civic Reporting App REST API')
+    .setDescription('REST API for Civic Reporting App')
     .setVersion('1.0')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access-token')
     .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
-
-  // Health check — must respond before DB is ready
-  app.getHttpAdapter().get('/health', (req: any, res: any) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString(), env: nodeEnv });
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: { persistAuthorization: true },
   });
-  app.getHttpAdapter().get('/', (req: any, res: any) => {
-    res.json({ status: 'ok', service: 'Civic Reporting API', docs: '/api/docs' });
+
+  // Health check endpoints — respond even if DB not ready
+  const httpAdapter = app.getHttpAdapter();
+  httpAdapter.get('/health', (_req: any, res: any) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+  httpAdapter.get('/', (_req: any, res: any) => {
+    res.status(200).json({
+      service: 'Civic Reporting API',
+      version: '1.0.0',
+      docs: '/api/docs',
+      health: '/health',
+    });
   });
 
   await app.listen(port, '0.0.0.0');
-
-  console.log(`\n🚀 API: http://0.0.0.0:${port}/api/v1`);
-  console.log(`📚 Docs: http://0.0.0.0:${port}/api/docs`);
-  console.log(`🌍 Env: ${nodeEnv}\n`);
+  console.log(`\n🚀 API ready on port ${port} [${nodeEnv}]`);
+  console.log(`📚 Docs: http://0.0.0.0:${port}/api/docs\n`);
 }
 
 bootstrap().catch(err => {
-  console.error('Bootstrap failed:', err);
+  console.error('Fatal startup error:', err.message);
   process.exit(1);
 });

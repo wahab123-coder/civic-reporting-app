@@ -28,33 +28,33 @@ import firebaseConfig from './config/firebase.config';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const isProduction = config.get('NODE_ENV') === 'production';
-        const databaseUrl = process.env.DATABASE_URL;
-        const base = {
-          entities:   [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: !isProduction,
+        const isProd = process.env.NODE_ENV === 'production';
+        const dbUrl  = process.env.DATABASE_URL;
+        const common = {
+          entities:    [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: true,          // always sync — handles new columns
           logging:     false,
-          ssl: { rejectUnauthorized: false },
-          extra: { max: 3, connectionTimeoutMillis: 10000 },
-          retryAttempts: 10,
-          retryDelay: 3000,
+          ssl:         { rejectUnauthorized: false },
+          extra:       { max: 3, connectionTimeoutMillis: 30000, idleTimeoutMillis: 30000 },
+          retryAttempts:  20,
+          retryDelay:     5000,
           keepConnectionAlive: true,
         };
-        if (databaseUrl) {
-          return { type: 'postgres' as const, url: databaseUrl, ...base };
+        if (dbUrl) {
+          return { type: 'postgres' as const, url: dbUrl, ...common };
         }
         return {
-          type: 'postgres' as const,
+          type:     'postgres' as const,
           host:     config.get('database.host'),
           port:     config.get<number>('database.port'),
           username: config.get('database.username'),
           password: config.get('database.password'),
           database: config.get('database.name'),
-          ...base,
+          ...common,
         };
       },
     }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 200 }]),
     ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
