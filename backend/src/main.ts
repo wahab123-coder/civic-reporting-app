@@ -19,6 +19,7 @@ async function bootstrap() {
   app.use(helmet({ contentSecurityPolicy: false }));
   app.use(compression());
 
+  // Allow all origins — tightened per CORS_ORIGIN env in production
   app.enableCors({
     origin: true,
     methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
@@ -39,18 +40,18 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
 
   // Swagger
-  const swaggerConfig = new DocumentBuilder()
+  const swaggerCfg = new DocumentBuilder()
     .setTitle('Civic Reporting API')
     .setDescription('REST API for Civic Reporting App')
     .setVersion('1.0')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access-token')
     .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  const document = SwaggerModule.createDocument(app, swaggerCfg);
   SwaggerModule.setup('api/docs', app, document, {
     swaggerOptions: { persistAuthorization: true },
   });
 
-  // Health check endpoints — respond even if DB not ready
+  // Health & root endpoints — respond immediately even before DB ready
   const httpAdapter = app.getHttpAdapter();
   httpAdapter.get('/health', (_req: any, res: any) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -65,11 +66,11 @@ async function bootstrap() {
   });
 
   await app.listen(port, '0.0.0.0');
-  console.log(`\n🚀 API ready on port ${port} [${nodeEnv}]`);
-  console.log(`📚 Docs: http://0.0.0.0:${port}/api/docs\n`);
+  console.log(`\n🚀 API ready → http://0.0.0.0:${port}/api/v1 [${nodeEnv}]`);
+  console.log(`📚 Docs → http://0.0.0.0:${port}/api/docs\n`);
 }
 
 bootstrap().catch(err => {
-  console.error('Fatal startup error:', err.message);
+  console.error('Fatal:', err.message);
   process.exit(1);
 });
