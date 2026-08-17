@@ -55,7 +55,7 @@
     "reflect-metadata": "^0.2.1",
     "nodemailer": "^6.9.8"
   },
-  "devDependencies": {
+  "dependencies": {
     "@nestjs/cli": "^10.3.2",
     "@nestjs/schematics": "^10.1.1",
     "@nestjs/testing": "^10.3.0",
