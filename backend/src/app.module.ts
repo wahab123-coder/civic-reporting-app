@@ -28,28 +28,13 @@ import firebaseConfig from './config/firebase.config';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const dbUrl = process.env.DATABASE_URL;
-        if (dbUrl) {
-          return {
-            type: 'postgres' as const,
-            url: dbUrl,
-            entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: false,
-            logging: false,
-            ssl: { rejectUnauthorized: false },
-            extra: { max: 3, connectionTimeoutMillis: 30000 },
-            retryAttempts: 20,
-            retryDelay: 5000,
-            keepConnectionAlive: true,
-          };
-        }
         return {
           type: 'postgres' as const,
-          host: config.get<string>('database.host'),
-          port: config.get<number>('database.port'),
-          username: config.get<string>('database.username'),
-          password: config.get<string>('database.password'),
-          database: config.get<string>('database.name'),
+          host:     process.env.DB_HOST     || config.get<string>('database.host'),
+          port:     parseInt(process.env.DB_PORT || '5432', 10),
+          username: process.env.DB_USERNAME || config.get<string>('database.username'),
+          password: process.env.DB_PASSWORD || config.get<string>('database.password'),
+          database: process.env.DB_NAME     || config.get<string>('database.name'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: false,
           logging: false,

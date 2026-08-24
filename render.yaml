@@ -1,5 +1,4 @@
 services:
-  # ── Backend API ───────────────────────────────────────────
   - type: web
     name: civic-reporting-api
     runtime: node
@@ -8,16 +7,21 @@ services:
     rootDir: backend
     buildCommand: npm ci --include=dev && npm run build
     startCommand: node dist/main
-    numInstances: 1
     envVars:
-      - key: NODE_VERSION
-        value: 20.11.0
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 3000
-      - key: DATABASE_URL
-        value: postgresql://postgres.yckasecazpyfmihpjsro:Civic%40Report2024%21@aws-0-eu-west-1.pooler.supabase.com:6543/postgres
+      - key: DB_HOST
+        value: db.yckasecazpyfmihpjsro.supabase.co
+      - key: DB_PORT
+        value: 5432
+      - key: DB_USERNAME
+        value: postgres
+      - key: DB_PASSWORD
+        value: "Civic@Report2024!"
+      - key: DB_NAME
+        value: postgres
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -29,7 +33,6 @@ services:
       - key: CORS_ORIGIN
         value: https://civic-reporting-frontend.onrender.com
 
-  # ── Frontend Static Site ──────────────────────────────────
   - type: web
     name: civic-reporting-frontend
     runtime: static
@@ -45,5 +48,3 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://civic-reporting-api.onrender.com/api/v1
-      - key: VITE_MAPBOX_TOKEN
-        value: ""
