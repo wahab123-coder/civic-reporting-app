@@ -13,13 +13,11 @@ async function bootstrap() {
     abortOnError: false,
   });
 
-  const port    = parseInt(process.env.PORT || '3000', 10);
-  const nodeEnv = process.env.NODE_ENV || 'development';
+  const port = parseInt(process.env.PORT || '3000', 10);
 
   app.use(helmet({ contentSecurityPolicy: false }));
   app.use(compression());
 
-  // Allow all origins — tightened per CORS_ORIGIN env in production
   app.enableCors({
     origin: true,
     methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
@@ -47,27 +45,20 @@ async function bootstrap() {
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access-token')
     .build();
   const document = SwaggerModule.createDocument(app, swaggerCfg);
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: { persistAuthorization: true },
-  });
+  SwaggerModule.setup('api/docs', app, document);
 
-  // Health & root endpoints — respond immediately even before DB ready
-  const httpAdapter = app.getHttpAdapter();
-  httpAdapter.get('/health', (_req: any, res: any) => {
+  // Health endpoints — MUST respond even if DB is not connected
+  const http = app.getHttpAdapter();
+  http.get('/health', (_req: any, res: any) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
   });
-  httpAdapter.get('/', (_req: any, res: any) => {
-    res.status(200).json({
-      service: 'Civic Reporting API',
-      version: '1.0.0',
-      docs: '/api/docs',
-      health: '/health',
-    });
+  http.get('/', (_req: any, res: any) => {
+    res.status(200).json({ service: 'Civic Reporting API', docs: '/api/docs' });
   });
 
+  // Listen FIRST — then DB connects in background
   await app.listen(port, '0.0.0.0');
-  console.log(`\n🚀 API ready → http://0.0.0.0:${port}/api/v1 [${nodeEnv}]`);
-  console.log(`📚 Docs → http://0.0.0.0:${port}/api/docs\n`);
+  console.log(`\n🚀 API ready on port ${port}`);
 }
 
 bootstrap().catch(err => {
