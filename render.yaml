@@ -1,12 +1,10 @@
 services:
   - type: web
     name: civic-reporting-api
-    runtime: node
-    region: oregon
+    runtime: docker
+    region: frankfurt
     plan: free
-    rootDir: backend
-    buildCommand: npm ci --include=dev && npm run build
-    startCommand: node dist/main
+    dockerfilePath: ./backend/Dockerfile
     envVars:
       - key: NODE_ENV
         value: production
