@@ -5,8 +5,9 @@ import { reportsApi, commentsApi, mediaApi } from '@/services/api';
 import {
   ChevronLeft, MapPin, Calendar, ThumbsUp, Send,
   Loader2, CheckCircle2, XCircle, Copy, Image as ImageIcon,
-  AlertTriangle, Clock, Building2,
+  AlertTriangle, Clock, Building2, Share2,
 } from 'lucide-react';
+import ShareModal from '@/components/ui/ShareModal';
 import {
   CATEGORY_ICONS, CATEGORY_LABELS, STATUS_LABELS,
   formatDateTime, timeAgo, cn,
@@ -226,8 +227,12 @@ export default function CitizenReportDetailPage() {
             <p className="text-xs text-gray-500 mt-0.5">{CATEGORY_LABELS[report.category]}</p>
           </div>
           <button onClick={() => upvote.mutate()}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-civic-50 hover:text-civic-600 hover:border-civic-300 transition-all">
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-civic-50 hover:text-civic-600 hover:border-civic-300 transition-all">
             <ThumbsUp className="w-3.5 h-3.5" /> {report.upvotes}
+          </button>
+          <button onClick={() => setShowShare(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-civic-600 text-white text-xs font-semibold hover:bg-civic-700 transition-all">
+            <Share2 className="w-3.5 h-3.5" /> Share
           </button>
         </div>
         <p className="text-sm text-gray-600 leading-relaxed">{report.description}</p>
@@ -344,6 +349,13 @@ export default function CitizenReportDetailPage() {
           </button>
         </div>
       </div>
+      {showShare && (
+        <ShareModal
+          report={report}
+          governmentResponse={report.resolutionNote}
+          onClose={() => setShowShare(false)}
+        />
+      )}
     </div>
   );
 }
