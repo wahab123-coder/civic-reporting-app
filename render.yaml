@@ -3,11 +3,12 @@ services:
   - type: web
     name: civic-reporting-api
     runtime: node
-    region: frankfurt
+    region: oregon
     plan: free
     rootDir: backend
     buildCommand: npm ci --include=dev && npm run build
     startCommand: node dist/main
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
@@ -38,7 +39,7 @@ services:
   - type: web
     name: civic-reporting-frontend
     runtime: static
-    region: frankfurt
+    region: oregon
     plan: free
     rootDir: frontend
     buildCommand: npm ci && npm run build
