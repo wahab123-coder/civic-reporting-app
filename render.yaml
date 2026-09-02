@@ -34,7 +34,7 @@ services:
   - type: web
     name: civic-reporting-frontend
     runtime: static
-    region: oregon
+    region: frankfurt
     plan: free
     rootDir: frontend
     buildCommand: npm ci && npm run build
