@@ -150,8 +150,7 @@ export default function LoginPage() {
         <div className="mt-4 bg-white/10 rounded-2xl p-4">
           <p className="text-white text-sm font-semibold mb-3 flex items-center gap-2">
             <Search className="w-4 h-4" /> Track complaint without login
-          </p>
-          <div className="flex gap-2">
+          </p>          <div className="flex gap-2">
             <input value={trackId} onChange={e => setTrackId(e.target.value.toUpperCase())}
               placeholder="CIV-2026-000001"
               className="input flex-1 text-sm font-mono"
@@ -176,6 +175,24 @@ export default function LoginPage() {
           )}
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="py-4 px-6 text-center">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-civic-200">
+          <span>© {new Date().getFullYear()} CivicReport</span>
+          <span className="hidden sm:inline">•</span>
+          <span>Empowering Citizens</span>
+          <span className="hidden sm:inline">•</span>
+          <span>Nigeria</span>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mt-1 text-[11px] text-civic-300">
+          <span>Privacy Policy</span>
+          <span>•</span>
+          <span>Terms of Service</span>
+          <span>•</span>
+          <span>Contact Support</span>
+        </div>
+      </footer>
     </div>
   );
 }
