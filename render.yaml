@@ -1,11 +1,13 @@
 services:
+  # ── Backend API ───────────────────────────────────────────
   - type: web
     name: civic-reporting-api
-    runtime: docker
+    runtime: node
     region: frankfurt
     plan: free
     rootDir: backend
-    dockerfilePath: ./Dockerfile
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: node dist/main
     envVars:
       - key: NODE_ENV
         value: production
@@ -32,6 +34,7 @@ services:
       - key: CORS_ORIGIN
         value: https://civic-reporting-frontend.onrender.com
 
+  # ── Frontend Static Site ──────────────────────────────────
   - type: web
     name: civic-reporting-frontend
     runtime: static
