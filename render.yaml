@@ -17,7 +17,7 @@ services:
       - key: DB_HOST
         value: aws-0-eu-west-1.pooler.supabase.com
       - key: DB_PORT
-        value: 6543
+        value: 5432
       - key: DB_USERNAME
         value: postgres.yckasecazpyfmihpjsro
       - key: DB_PASSWORD
@@ -26,6 +26,10 @@ services:
         value: postgres
       - key: DB_SSL
         value: "true"
+      - key: PGSSLMODE
+        value: require
+      - key: NODE_OPTIONS
+        value: "--dns-result-order=ipv4first"
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
