@@ -28,18 +28,27 @@ import firebaseConfig from './config/firebase.config';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
+        const databaseUrl = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
+        const shouldUseSsl = process.env.DB_SSL !== 'false' && (process.env.NODE_ENV === 'production' || Boolean(databaseUrl));
+
         return {
           type: 'postgres' as const,
-          host:     process.env.DB_HOST     || config.get<string>('database.host'),
-          port:     parseInt(process.env.DB_PORT || '5432', 10),
-          username: process.env.DB_USERNAME || config.get<string>('database.username'),
-          password: process.env.DB_PASSWORD || config.get<string>('database.password'),
-          database: process.env.DB_NAME     || config.get<string>('database.name'),
+          url: databaseUrl || undefined,
+          host: databaseUrl ? undefined : (process.env.DB_HOST || config.get<string>('database.host')),
+          port: databaseUrl ? undefined : parseInt(process.env.DB_PORT || config.get<string>('database.port') || '5432', 10),
+          username: databaseUrl ? undefined : (process.env.DB_USERNAME || config.get<string>('database.username')),
+          password: databaseUrl ? undefined : (process.env.DB_PASSWORD || config.get<string>('database.password')),
+          database: databaseUrl ? undefined : (process.env.DB_NAME || config.get<string>('database.name')),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: false,
           logging: false,
-          ssl: { rejectUnauthorized: false },
-          extra: { max: 2, connectionTimeoutMillis: 60000, idleTimeoutMillis: 60000 },
+          ssl: shouldUseSsl ? { rejectUnauthorized: false } : false,
+          extra: {
+            max: 5,
+            connectionTimeoutMillis: 20000,
+            idleTimeoutMillis: 60000,
+            statement_timeout: 30000,
+          },
           retryAttempts: 99,
           retryDelay: 10000,
           keepConnectionAlive: false,

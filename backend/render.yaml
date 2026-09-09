@@ -5,24 +5,18 @@ services:
     region: oregon
     plan: free
     rootDir: backend
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: node dist/main
-    healthCheckPath: /api/docs
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 3000
-      - key: DB_HOST
+      - key: DATABASE_URL
         sync: false
-      - key: DB_PORT
-        value: 5432
-      - key: DB_USERNAME
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      - key: DB_NAME
-        value: civic_reporting
+      - key: DB_SSL
+        value: true
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -32,6 +26,8 @@ services:
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
       - key: CORS_ORIGIN
+        sync: false
+      - key: FRONTEND_URL
         sync: false
       - key: AWS_ACCESS_KEY_ID
         sync: false
