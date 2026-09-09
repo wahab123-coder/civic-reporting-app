@@ -48,6 +48,7 @@ import firebaseConfig from './config/firebase.config';
             connectionTimeoutMillis: 20000,
             idleTimeoutMillis: 60000,
             statement_timeout: 30000,
+            family: 4,
           },
           retryAttempts: 99,
           retryDelay: 10000,

@@ -3,7 +3,7 @@ services:
   - type: web
     name: civic-reporting-api
     runtime: node
-    region: oregon
+    region: frankfurt
     plan: free
     rootDir: backend
     buildCommand: npm ci --include=dev && npm run build
@@ -14,10 +14,18 @@ services:
         value: production
       - key: PORT
         value: 3000
-      - key: DATABASE_URL
-        sync: false
+      - key: DB_HOST
+        value: aws-0-eu-west-1.pooler.supabase.com
+      - key: DB_PORT
+        value: 6543
+      - key: DB_USERNAME
+        value: postgres.yckasecazpyfmihpjsro
+      - key: DB_PASSWORD
+        value: "Civic@Report2024!"
+      - key: DB_NAME
+        value: postgres
       - key: DB_SSL
-        value: true
+        value: "true"
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -27,9 +35,7 @@ services:
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
       - key: CORS_ORIGIN
-        sync: false
-      - key: FRONTEND_URL
-        sync: false
+        value: https://civic-reporting-frontend.onrender.com
 
   # ── Frontend Static Site ──────────────────────────────────
   - type: web
