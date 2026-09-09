@@ -1,5 +1,4 @@
 services:
-  # ── Backend API ───────────────────────────────────────────
   - type: web
     name: civic-reporting-api
     runtime: node
@@ -7,7 +6,7 @@ services:
     plan: free
     rootDir: backend
     buildCommand: npm ci --include=dev && npm run build
-    startCommand: node dist/main
+    startCommand: node --dns-result-order=ipv4first dist/main
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -24,12 +23,6 @@ services:
         value: "Civic@Report2024!"
       - key: DB_NAME
         value: postgres
-      - key: DB_SSL
-        value: "true"
-      - key: PGSSLMODE
-        value: require
-      - key: NODE_OPTIONS
-        value: "--dns-result-order=ipv4first"
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -41,7 +34,6 @@ services:
       - key: CORS_ORIGIN
         value: https://civic-reporting-frontend.onrender.com
 
-  # ── Frontend Static Site ──────────────────────────────────
   - type: web
     name: civic-reporting-frontend
     runtime: static

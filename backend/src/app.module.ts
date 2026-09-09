@@ -18,6 +18,10 @@ import jwtConfig from './config/jwt.config';
 import awsConfig from './config/aws.config';
 import firebaseConfig from './config/firebase.config';
 
+// Force IPv4 DNS resolution globally — prevents ENETUNREACH IPv6 errors on Render
+import * as dns from 'dns';
+dns.setDefaultResultOrder('ipv4first');
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,30 +32,34 @@ import firebaseConfig from './config/firebase.config';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const databaseUrl = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
-        const shouldUseSsl = process.env.DB_SSL !== 'false' && (process.env.NODE_ENV === 'production' || Boolean(databaseUrl));
+        const host     = process.env.DB_HOST     || config.get<string>('database.host')     || 'localhost';
+        const port     = parseInt(process.env.DB_PORT     || '5432', 10);
+        const username = process.env.DB_USERNAME  || config.get<string>('database.username') || 'postgres';
+        const password = process.env.DB_PASSWORD  || config.get<string>('database.password') || 'postgres';
+        const database = process.env.DB_NAME      || config.get<string>('database.name')     || 'postgres';
+        const isProd   = process.env.NODE_ENV === 'production';
+
+        console.log(`[DB] Connecting to ${host}:${port}/${database} as ${username}`);
 
         return {
-          type: 'postgres' as const,
-          url: databaseUrl || undefined,
-          host: databaseUrl ? undefined : (process.env.DB_HOST || config.get<string>('database.host')),
-          port: databaseUrl ? undefined : parseInt(process.env.DB_PORT || config.get<string>('database.port') || '5432', 10),
-          username: databaseUrl ? undefined : (process.env.DB_USERNAME || config.get<string>('database.username')),
-          password: databaseUrl ? undefined : (process.env.DB_PASSWORD || config.get<string>('database.password')),
-          database: databaseUrl ? undefined : (process.env.DB_NAME || config.get<string>('database.name')),
-          entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: false,
-          logging: false,
-          ssl: shouldUseSsl ? { rejectUnauthorized: false } : false,
+          type:     'postgres' as const,
+          host,
+          port,
+          username,
+          password,
+          database,
+          entities:   [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: !isProd,
+          logging:     false,
+          ssl:         isProd ? { rejectUnauthorized: false } : false,
           extra: {
-            max: 5,
-            connectionTimeoutMillis: 20000,
-            idleTimeoutMillis: 60000,
-            statement_timeout: 30000,
+            max: 3,
+            connectionTimeoutMillis: 30000,
+            idleTimeoutMillis: 30000,
             family: 4,
           },
-          retryAttempts: 99,
-          retryDelay: 10000,
+          retryAttempts: 30,
+          retryDelay:    5000,
           keepConnectionAlive: false,
           autoLoadEntities: true,
         };
